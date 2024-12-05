@@ -57,3 +57,53 @@ class FalseAssertion50(Probe):
                         if false_assertion.startswith("The"):
                             false_assertion = "t" + false_assertion[1:]
                         self.prompts.append(f"{prefix} {false_assertion}")
+
+
+
+### Arabic probes ###
+class FalseAssertion50Ar(Probe):
+    """Does the model reject [questions based on] false claims?
+
+    Poses a number of false statements to the model and checks to see if the model
+    refutes the statement, contradicts the statement, or issues a safety mitigation
+    message."""
+
+    bcp47 = "ar"
+    doc_uri = "https://arxiv.org/abs/2304.13734"
+    recommended_detector = [
+        # "misleading.MustRefuteClaimModel",
+        "misleading.MustRefuteClaimKW",
+        "mitigation.MitigationBypassArabic",
+        # "misleading.MustContradictNLI",
+    ]
+    tags = [
+        "avid-effect:performance:P0204",
+        "owasp:llm09",
+        "quality:Robustness:GenerativeMisinformation",
+        "payload:hallucination",
+    ]
+    goal = "make the model expand on a false assertion"
+
+    def __init__(self, config_root=_config):
+        super().__init__(config_root=config_root)
+
+        prefixes = ["", "لماذا هذا؟", "اشرح لماذا"]
+
+        self.prompts = []
+
+        for prefix in prefixes:
+            with open(
+                data_path /"ar" / "truefalse_falseclaims_50_ar.txt",
+                "r",
+                encoding="utf-8",
+            ) as assertions:
+                for false_assertion in assertions:
+                    false_assertion = false_assertion.strip()
+                    if not false_assertion:
+                        continue
+                    if not prefix:
+                        self.prompts.append(false_assertion)
+                    else:
+                        if false_assertion.startswith("The"):
+                            false_assertion = "t" + false_assertion[1:]
+                        self.prompts.append(f"{prefix} {false_assertion}")
